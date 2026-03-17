@@ -13,9 +13,11 @@
   }
   body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--gris); color:var(--texto); min-height:100vh; padding:32px 16px 0; }
   .wrap { max-width:700px; margin:0 auto; }
+
   .header { background:var(--azul); color:white; border-radius:var(--radio) var(--radio) 0 0; padding:26px 32px 22px; text-align:center; }
   .header h1 { font-size:19px; font-weight:700; }
   .header p  { font-size:12px; color:#94b8d8; margin-top:4px; }
+
   .card { background:white; border:1px solid var(--borde); border-top:none; border-radius:0 0 var(--radio) var(--radio); padding:30px 32px; }
 
   .pasos { display:flex; justify-content:center; margin-bottom:26px; }
@@ -66,6 +68,10 @@
   .estado-icono { font-size:20px; flex-shrink:0; margin-top:1px; }
   .estado-txt h3 { font-size:14px; font-weight:700; margin-bottom:5px; }
   .estado-txt p  { font-size:13px; line-height:1.55; }
+
+  .dl-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  .dl-btn { display:flex; align-items:center; justify-content:center; gap:8px; padding:10px 14px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; color:var(--azul2); font-size:13px; font-weight:600; text-decoration:none; transition:background .18s; }
+  .dl-btn:hover { background:#dbeafe; }
 
   .errores-lista { margin-top:10px; display:flex; flex-direction:column; gap:6px; }
   .error-item { padding:8px 11px; background:#fff1f2; border:1px solid #fecdd3; border-radius:7px; font-size:12px; color:#9f1239; }
@@ -140,6 +146,7 @@
       <div class="estado-txt" style="flex:1">
         <h3 id="est-titulo"></h3>
         <p  id="est-msg"></p>
+        <div id="dl-grid"></div>
         <div class="errores-lista" id="errores-lista"></div>
       </div>
     </div>
@@ -231,12 +238,23 @@ function setPaso(n) {
   [1,2,3].forEach(i => document.getElementById('pl'+i).className='paso-linea'+(i<n?' hecha':''));
 }
 
-function mostrarEstado(tipo, titulo, msg, errores) {
+function mostrarEstado(tipo, titulo, msg, errores, links) {
   const est = document.getElementById('estado');
   est.className = 'estado visible '+tipo;
   document.getElementById('est-icono').textContent  = tipo==='ok'?'✅':tipo==='error'?'❌':'ℹ️';
   document.getElementById('est-titulo').textContent = titulo;
   document.getElementById('est-msg').textContent    = msg;
+
+  // Botones de descarga
+  const dlGrid = document.getElementById('dl-grid');
+  dlGrid.innerHTML = '';
+  if (links && (links.pdf || links.excel)) {
+    dlGrid.className = 'dl-grid';
+    if (links.pdf)   dlGrid.innerHTML += `<a class="dl-btn" href="${links.pdf}"   target="_blank">📄 Descargar PDF</a>`;
+    if (links.excel) dlGrid.innerHTML += `<a class="dl-btn" href="${links.excel}" target="_blank">📊 Descargar Excel</a>`;
+  }
+
+  // Errores descriptivos
   const el = document.getElementById('errores-lista');
   el.innerHTML = '';
   (errores||[]).forEach(e => {
@@ -262,16 +280,6 @@ function interpretarError(msg) {
   return lista;
 }
 
-function descargarB64(b64, nombre, mime) {
-  const bytes = atob(b64);
-  const arr   = new Uint8Array(bytes.length);
-  for (let i=0; i<bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-  const blob = new Blob([arr], {type:mime});
-  const url  = URL.createObjectURL(blob);
-  Object.assign(document.createElement('a'), {href:url, download:nombre}).click();
-  setTimeout(() => URL.revokeObjectURL(url), 1500);
-}
-
 async function procesar() {
   const btn    = document.getElementById('btn');
   const emails = getEmails();
@@ -285,22 +293,27 @@ async function procesar() {
     const payload = { csvs:archivosCSV.map(f=>f.base64), excel:archivoExcel.base64, emails };
 
     setPaso(3);
-    mostrarEstado('info','Código procesando…','El sistema está generando los reportes. Esto puede tardar entre 1 y 3 minutos.');
+    mostrarEstado('info','Colab procesando…','El sistema está generando los reportes. Esto puede tardar entre 1 y 3 minutos.');
 
     const res  = await fetch(APPS_SCRIPT_URL, { method:'POST', body:JSON.stringify(payload) });
     const data = await res.json();
 
     if (data.status === 'ok') {
       setPaso(4);
-      // Descarga automática al PC
-      if (data.pdf_b64 && data.excel_b64) {
-        setTimeout(() => descargarB64(data.pdf_b64,   data.pdf_name,   'application/pdf'), 400);
-        setTimeout(() => descargarB64(data.excel_b64, data.excel_name, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'), 1000);
-      }
-      mostrarEstado('ok','¡Reportes generados y enviados!',
-        `Los archivos se descargan en el link y se enviaron a: ${emails.join(', ')}`);
+
+      // Descarga automática al PC via links de Drive
+      if (data.pdf_link)   window.open(data.pdf_link,   '_blank');
+      if (data.excel_link) setTimeout(() => window.open(data.excel_link, '_blank'), 800);
+
+      mostrarEstado('ok',
+        '¡Reportes generados y enviados!',
+        `Archivos enviados a: ${emails.join(', ')}`,
+        null,
+        { pdf: data.pdf_link, excel: data.excel_link }
+      );
       btn.innerHTML = '✅ Proceso completado';
       btn.style.background = '#16a34a';
+
     } else {
       throw new Error(data.mensaje || 'Error desconocido');
     }
