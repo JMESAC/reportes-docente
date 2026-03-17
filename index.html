@@ -60,17 +60,24 @@
   .btn-procesar:active  { transform:scale(.98); }
   .btn-procesar:disabled{ background:#94a3b8; cursor:not-allowed; }
 
-  /* Resultado exitoso */
+  /* Resultado */
   .resultado { display:none; margin-top:18px; border-radius:var(--radio); overflow:hidden; border:1px solid #bbf7d0; }
   .resultado.visible { display:block; }
-  .resultado-header { background:#16a34a; color:white; padding:16px 20px; display:flex; align-items:center; gap:10px; }
-  .resultado-header h3 { font-size:15px; font-weight:700; }
-  .resultado-header p  { font-size:12px; opacity:.85; margin-top:2px; }
-  .resultado-body { background:#f0fdf4; padding:18px 20px; }
-  .resultado-info { font-size:13px; color:#166534; margin-bottom:14px; line-height:1.6; }
+  .res-header { background:var(--verde); color:white; padding:16px 20px; }
+  .res-header h3 { font-size:15px; font-weight:700; margin-bottom:2px; }
+  .res-header p  { font-size:12px; opacity:.85; }
+  .res-body { background:#f0fdf4; padding:18px 20px; }
+  .res-info { font-size:13px; color:#166534; margin-bottom:14px; line-height:1.7; }
   .dl-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .dl-btn { display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 14px; background:white; border:2px solid #16a34a; border-radius:8px; color:#15803d; font-size:14px; font-weight:700; text-decoration:none; transition:all .18s; cursor:pointer; }
-  .dl-btn:hover { background:#dcfce7; }
+  .dl-btn {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:13px 14px; border-radius:8px;
+    font-size:14px; font-weight:700; text-decoration:none; cursor:pointer;
+    transition:all .18s; border:none;
+  }
+  .dl-btn-pdf   { background:var(--azul);  color:white; }
+  .dl-btn-excel { background:var(--azul2); color:white; }
+  .dl-btn:hover { opacity:.88; transform:translateY(-1px); }
   .dl-nota { font-size:11px; color:#6b7280; margin-top:10px; text-align:center; }
 
   /* Estado info/error */
@@ -145,32 +152,30 @@
         <div class="email-row"><div class="email-num">4</div><input type="email" id="email4" placeholder="Opcional" oninput="verificarBoton()"></div>
         <div class="email-row"><div class="email-num">5</div><input type="email" id="email5" placeholder="Opcional" oninput="verificarBoton()"></div>
       </div>
-      <div class="email-nota">Todos los correos recibirán los archivos adjuntos. El primero es obligatorio.</div>
+      <div class="email-nota">Todos los correos recibirán un link de descarga. El primero es obligatorio.</div>
     </div>
 
     <button class="btn-procesar" id="btn" onclick="procesar()" disabled>
       <span id="btn-icono">🚀</span><span id="btn-texto">Procesar y enviar reportes</span>
     </button>
 
-    <!-- Resultado exitoso -->
+    <!-- Resultado -->
     <div class="resultado" id="resultado">
-      <div class="resultado-header">
-        <div>
-          <h3>✅ ¡Reportes generados correctamente!</h3>
-          <p id="res-subtitulo">Archivos enviados por correo y guardados en Drive</p>
-        </div>
+      <div class="res-header">
+        <h3>✅ ¡Reportes generados correctamente!</h3>
+        <p id="res-subtitulo"></p>
       </div>
-      <div class="resultado-body">
-        <div class="resultado-info" id="res-info"></div>
+      <div class="res-body">
+        <div class="res-info" id="res-info"></div>
         <div class="dl-grid">
-          <a class="dl-btn" id="dl-pdf"   href="#" target="_blank">📄 Descargar PDF</a>
-          <a class="dl-btn" id="dl-excel" href="#" target="_blank">📊 Descargar Excel</a>
+          <button class="dl-btn dl-btn-pdf"   id="dl-pdf"   onclick="descargarPDF()">📄 Descargar PDF</button>
+          <button class="dl-btn dl-btn-excel" id="dl-excel" onclick="descargarExcel()">📊 Descargar Excel</button>
         </div>
-        <div class="dl-nota" id="dl-nota">Haz clic en los botones para descargar. Si el navegador bloquea las ventanas emergentes, permite las ventanas emergentes de este sitio.</div>
+        <div class="dl-nota">Los archivos también fueron enviados por correo con links de descarga directa.</div>
       </div>
     </div>
 
-    <!-- Estado info / error -->
+    <!-- Estado -->
     <div class="estado" id="estado">
       <div class="estado-icono" id="est-icono">ℹ️</div>
       <div class="estado-txt" style="flex:1">
@@ -191,6 +196,7 @@
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwpo5GQluEbjg9Tv98BaCPajsckw27-zjhMk1MB1Bz_gK-GSMAMjpumnOGgZnX02gLL/exec';
 
 let archivosCSV = [], archivoExcel = null;
+let _pdfB64 = '', _excelB64 = '', _pdfName = '', _excelName = '';
 
 function ev(e, tipo, zona) {
   e.preventDefault();
@@ -266,7 +272,7 @@ function setPaso(n) {
   [1,2,3].forEach(i => document.getElementById('pl'+i).className='paso-linea'+(i<n?' hecha':''));
 }
 
-function mostrarInfo(tipo, titulo, msg) {
+function mostrarEstado(tipo, titulo, msg) {
   document.getElementById('resultado').className = 'resultado';
   const est = document.getElementById('estado');
   est.className = 'estado visible '+tipo;
@@ -279,11 +285,11 @@ function mostrarInfo(tipo, titulo, msg) {
 function mostrarError(msg) {
   document.getElementById('resultado').className = 'resultado';
   const lista = interpretarError(msg);
-  const est   = document.getElementById('estado');
+  const est = document.getElementById('estado');
   est.className = 'estado visible error';
   document.getElementById('est-icono').textContent  = '❌';
   document.getElementById('est-titulo').textContent = 'Ocurrió un error';
-  document.getElementById('est-msg').textContent    = 'Revisa los siguientes puntos y vuelve a intentarlo:';
+  document.getElementById('est-msg').textContent    = 'Revisa los siguientes puntos:';
   const el = document.getElementById('errores-lista');
   el.innerHTML = '';
   lista.forEach(e => {
@@ -294,62 +300,38 @@ function mostrarError(msg) {
   });
 }
 
-function mostrarResultado(data, emails) {
-  document.getElementById('estado').className = 'estado';
-  const res = document.getElementById('resultado');
-  res.className = 'resultado visible';
-
-  // Info de correos
-  document.getElementById('res-info').innerHTML =
-    `<strong>Correos enviados a:</strong> ${emails.join(', ')}<br>` +
-    (data.drive_ok ? '<strong>Guardado en Drive:</strong> ✅ Carpeta Reportes_Docente' : '');
-
-  // Botones de descarga
-  const dlPdf   = document.getElementById('dl-pdf');
-  const dlExcel = document.getElementById('dl-excel');
-
-  if (data.pdf_link && data.pdf_link !== '') {
-    dlPdf.href = data.pdf_link;
-    dlPdf.style.opacity = '1';
-    dlPdf.style.pointerEvents = 'auto';
-  } else {
-    dlPdf.href = '#';
-    dlPdf.style.opacity = '0.4';
-    dlPdf.style.pointerEvents = 'none';
-    dlPdf.textContent = '📄 PDF (revisar correo)';
-  }
-
-  if (data.excel_link && data.excel_link !== '') {
-    dlExcel.href = data.excel_link;
-    dlExcel.style.opacity = '1';
-    dlExcel.style.pointerEvents = 'auto';
-  } else {
-    dlExcel.href = '#';
-    dlExcel.style.opacity = '0.4';
-    dlExcel.style.pointerEvents = 'none';
-    dlExcel.textContent = '📊 Excel (revisar correo)';
-  }
-
-  if (!data.drive_ok) {
-    document.getElementById('dl-nota').textContent =
-      'Los links de Drive no están disponibles. Los archivos fueron enviados por correo como adjuntos.';
-  }
-}
-
 function interpretarError(msg) {
   const lista = [];
   if (msg.includes('not likely a datetime')||msg.includes('strftime'))
-    lista.push({ titulo:'Fecha inválida en la tabla de especificaciones', desc:' — La celda de fecha debe contener una fecha completa (ej: 27/10/2025), no solo el número del día.' });
-  if (msg.includes('shape')||msg.includes('column')||msg.includes('num_preguntas'))
-    lista.push({ titulo:'Cantidad de preguntas no coincide', desc:' — El número de preguntas en la tabla de especificaciones debe coincidir exactamente con las columnas del CSV exportado.' });
-  if (msg.includes('iloc')||msg.includes('KeyError')||msg.includes('index'))
-    lista.push({ titulo:'Estructura del Excel incorrecta', desc:' — Verifica que el Excel tenga nivel, asignatura, instrumento, unidad y cursos en las celdas correctas.' });
-  if (msg.includes('read_csv')||msg.includes('EmptyDataError'))
-    lista.push({ titulo:'CSV vacío o inválido', desc:' — Uno de los archivos CSV subidos está vacío o no tiene el formato correcto.' });
+    lista.push({ titulo:'Fecha inválida', desc:' — La celda de fecha debe tener formato completo (ej: 27/10/2025).' });
+  if (msg.includes('shape')||msg.includes('column'))
+    lista.push({ titulo:'Cantidad de preguntas no coincide', desc:' — Verifica que el número de preguntas en el Excel coincida con el CSV.' });
+  if (msg.includes('iloc')||msg.includes('KeyError'))
+    lista.push({ titulo:'Estructura del Excel incorrecta', desc:' — Verifica nivel, asignatura, instrumento, unidad y cursos.' });
   if (lista.length===0)
-    lista.push({ titulo:'Error en el procesamiento', desc:' — Revisa que los archivos sean los correctos y que la tabla de especificaciones esté bien completada.' });
+    lista.push({ titulo:'Error en el procesamiento', desc:' — Revisa que los archivos sean correctos.' });
   return lista;
 }
+
+// Descarga directa desde base64 almacenado en memoria
+function descargarB64(b64, nombre, mime) {
+  try {
+    const bytes = atob(b64);
+    const arr   = new Uint8Array(bytes.length);
+    for (let i=0; i<bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    const blob = new Blob([arr], {type:mime});
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), {href:url, download:nombre});
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 2000);
+  } catch(err) {
+    alert('Error al descargar. Usa el link del correo.');
+  }
+}
+
+function descargarPDF()   { descargarB64(_pdfB64,   _pdfName,   'application/pdf'); }
+function descargarExcel() { descargarB64(_excelB64, _excelName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); }
 
 async function procesar() {
   const btn    = document.getElementById('btn');
@@ -359,23 +341,40 @@ async function procesar() {
   document.getElementById('resultado').className = 'resultado';
 
   setPaso(2);
-  mostrarInfo('info','Enviando archivos…',`Subiendo ${archivosCSV.length} CSV${archivosCSV.length>1?'s':''} + 1 Excel al servidor.`);
+  mostrarEstado('info','Enviando archivos…',`Subiendo ${archivosCSV.length} CSV${archivosCSV.length>1?'s':''} + 1 Excel.`);
 
   try {
-    const payload = { csvs:archivosCSV.map(f=>f.base64), excel:archivoExcel.base64, emails };
-
     setPaso(3);
-    mostrarInfo('info','Colab procesando…','El sistema está generando los reportes. Esto puede tardar entre 1 y 3 minutos.');
+    mostrarEstado('info','Generando reportes…','El sistema está procesando los datos. Esto puede tardar 1-3 minutos.');
 
-    const res  = await fetch(APPS_SCRIPT_URL, { method:'POST', body:JSON.stringify(payload) });
+    const res  = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body:   JSON.stringify({ csvs:archivosCSV.map(f=>f.base64), excel:archivoExcel.base64, emails })
+    });
     const data = await res.json();
 
     if (data.status === 'ok') {
+      // Guardar base64 en memoria para los botones de descarga
+      _pdfB64    = data.pdf_b64    || '';
+      _excelB64  = data.excel_b64  || '';
+      _pdfName   = data.pdf_name   || 'reporte.pdf';
+      _excelName = data.excel_name || 'reporte.xlsx';
+
       setPaso(4);
       document.getElementById('estado').className = 'estado';
-      mostrarResultado(data, emails);
+      document.getElementById('resultado').className = 'resultado visible';
+      document.getElementById('res-subtitulo').textContent = 'Archivos listos para descargar · Correos enviados';
+      document.getElementById('res-info').innerHTML =
+        '<strong>Correos enviados a:</strong> ' + (data.enviados||emails).join(', ') + '<br>' +
+        (data.drive_ok ? '<strong>Guardado en Drive:</strong> ✅' : '');
+
       btn.innerHTML = '✅ Proceso completado';
       btn.style.background = '#16a34a';
+
+      // Descarga automática
+      if (_pdfB64)   setTimeout(()=>descargarPDF(),   500);
+      if (_excelB64) setTimeout(()=>descargarExcel(), 1500);
+
     } else {
       throw new Error(data.mensaje || 'Error desconocido');
     }
