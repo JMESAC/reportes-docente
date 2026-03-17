@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Reportes — Colegio Chuquicamata</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --azul:  #1a3a5c; --azul2: #2563a8; --verde: #16a34a;
+    --gris:  #f4f6f9; --borde: #d1d5db; --texto: #1e293b;
+    --muted: #64748b; --radio: 10px;
+  }
+  body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--gris); color:var(--texto); min-height:100vh; padding:32px 16px 0; }
+  .wrap { max-width:700px; margin:0 auto; }
+  .header { background:var(--azul); color:white; border-radius:var(--radio) var(--radio) 0 0; padding:26px 32px 22px; text-align:center; }
+  .header h1 { font-size:19px; font-weight:700; }
+  .header p  { font-size:12px; color:#94b8d8; margin-top:4px; }
+  .card { background:white; border:1px solid var(--borde); border-top:none; border-radius:0 0 var(--radio) var(--radio); padding:30px 32px; }
+
+  .pasos { display:flex; justify-content:center; margin-bottom:26px; }
+  .paso  { display:flex; flex-direction:column; align-items:center; gap:5px; flex:1; }
+  .paso-num { width:28px; height:28px; border-radius:50%; border:2px solid var(--borde); background:white; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--muted); transition:all .25s; }
+  .paso-num.activo { border-color:var(--azul2); color:var(--azul2); background:#eff6ff; }
+  .paso-num.hecho  { border-color:var(--verde); background:var(--verde); color:white; }
+  .paso-txt { font-size:11px; color:var(--muted); text-align:center; }
+  .paso-txt.activo { color:var(--azul2); font-weight:600; }
+  .paso-linea { flex:1; height:2px; background:var(--borde); align-self:center; margin-bottom:18px; transition:background .25s; }
+  .paso-linea.hecha { background:var(--verde); }
+
+  .seccion { margin-bottom:22px; }
+  .sec-label { font-size:11px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:7px; }
+  .sec-label::after { content:''; flex:1; height:1px; background:var(--borde); }
+
+  .drop-zone { border:2px dashed var(--borde); border-radius:var(--radio); padding:18px 16px; text-align:center; cursor:pointer; transition:all .18s; background:#fafbfc; }
+  .drop-zone:hover, .drop-zone.over { border-color:var(--azul2); background:#eff6ff; }
+  .drop-zone .icono { font-size:24px; margin-bottom:5px; }
+  .drop-zone .hint  { font-size:13px; color:var(--muted); }
+  .drop-zone .sub   { font-size:11px; color:#9ca3af; margin-top:3px; }
+  input[type=file]  { display:none; }
+
+  #lista-csv { margin-top:8px; display:flex; flex-direction:column; gap:6px; }
+  .file-item { display:flex; align-items:center; justify-content:space-between; padding:7px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; font-size:13px; }
+  .file-item .fname { font-weight:600; color:#15803d; }
+  .file-item .fsize { font-size:11px; color:#6b7280; margin-left:6px; }
+  .file-item .del-btn { background:none; border:none; cursor:pointer; color:#ef4444; font-size:16px; padding:0 4px; }
+
+  .emails-grid { display:flex; flex-direction:column; gap:7px; }
+  .email-row { display:flex; align-items:center; gap:8px; }
+  .email-row input { flex:1; padding:9px 12px; border:1px solid var(--borde); border-radius:8px; font-size:13px; color:var(--texto); outline:none; transition:border .18s; }
+  .email-row input:focus { border-color:var(--azul2); }
+  .email-row input::placeholder { color:#9ca3af; }
+  .email-num { width:22px; height:22px; border-radius:50%; background:var(--gris); border:1px solid var(--borde); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--muted); flex-shrink:0; }
+  .email-nota { font-size:11px; color:var(--muted); margin-top:6px; }
+
+  .btn-procesar { width:100%; padding:13px; background:var(--azul2); color:white; border:none; border-radius:var(--radio); font-size:15px; font-weight:700; cursor:pointer; transition:background .18s, transform .1s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .btn-procesar:hover   { background:#1d4ed8; }
+  .btn-procesar:active  { transform:scale(.98); }
+  .btn-procesar:disabled{ background:#94a3b8; cursor:not-allowed; }
+
+  .estado { margin-top:18px; padding:15px 18px; border-radius:var(--radio); display:none; align-items:flex-start; gap:12px; }
+  .estado.visible { display:flex; }
+  .estado.info  { background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; }
+  .estado.ok    { background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; }
+  .estado.error { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; }
+  .estado-icono { font-size:20px; flex-shrink:0; margin-top:1px; }
+  .estado-txt h3 { font-size:14px; font-weight:700; margin-bottom:5px; }
+  .estado-txt p  { font-size:13px; line-height:1.55; }
+
+  .errores-lista { margin-top:10px; display:flex; flex-direction:column; gap:6px; }
+  .error-item { padding:8px 11px; background:#fff1f2; border:1px solid #fecdd3; border-radius:7px; font-size:12px; color:#9f1239; }
+  .error-item strong { display:block; margin-bottom:2px; font-size:13px; }
+
+  .spin { width:18px; height:18px; flex-shrink:0; border:2.5px solid rgba(255,255,255,.4); border-top-color:white; border-radius:50%; animation:girar .8s linear infinite; }
+  @keyframes girar { to { transform:rotate(360deg); } }
+
+  .footer-wrap { text-align:center; padding:16px 0 24px; font-size:11px; color:#9ca3af; line-height:1.8; }
+  .footer-wrap strong { color:#64748b; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>📊 Sistema de Reportes de Evaluación</h1>
+    <p>Colegio Chuquicamata · Genera reportes PDF y Excel automáticamente</p>
+  </div>
+
+  <div class="card">
+    <div class="pasos">
+      <div class="paso"><div class="paso-num activo" id="pn1">1</div><div class="paso-txt activo" id="pt1">Archivos</div></div>
+      <div class="paso-linea" id="pl1"></div>
+      <div class="paso"><div class="paso-num" id="pn2">2</div><div class="paso-txt" id="pt2">Enviando</div></div>
+      <div class="paso-linea" id="pl2"></div>
+      <div class="paso"><div class="paso-num" id="pn3">3</div><div class="paso-txt" id="pt3">Procesando</div></div>
+      <div class="paso-linea" id="pl3"></div>
+      <div class="paso"><div class="paso-num" id="pn4">4</div><div class="paso-txt" id="pt4">Listo</div></div>
+    </div>
+
+    <div class="seccion">
+      <div class="sec-label">1 · Respuestas de estudiantes (CSV)</div>
+      <div class="drop-zone" id="drop-csv" onclick="document.getElementById('fi-csv').click()"
+           ondragover="ev(event,'over','csv')" ondragleave="ev(event,'leave','csv')" ondrop="ev(event,'drop','csv')">
+        <input type="file" id="fi-csv" accept=".csv" multiple onchange="agregarCSVs(this.files)">
+        <div class="icono">📄</div>
+        <div class="hint">Arrastra los archivos CSV aquí o haz clic</div>
+        <div class="sub">Puedes subir uno o varios CSV (un archivo por curso)</div>
+      </div>
+      <div id="lista-csv"></div>
+    </div>
+
+    <div class="seccion">
+      <div class="sec-label">2 · Tabla de especificaciones (XLSX)</div>
+      <div class="drop-zone" id="drop-excel" onclick="document.getElementById('fi-excel').click()"
+           ondragover="ev(event,'over','excel')" ondragleave="ev(event,'leave','excel')" ondrop="ev(event,'drop','excel')">
+        <input type="file" id="fi-excel" accept=".xlsx,.xls" onchange="setExcel(this.files[0])">
+        <div class="icono" id="excel-icono">📊</div>
+        <div class="hint" id="excel-hint">Arrastra el Excel aquí o haz clic</div>
+        <div class="sub"  id="excel-sub">.xlsx con la tabla de especificaciones del instrumento</div>
+      </div>
+    </div>
+
+    <div class="seccion">
+      <div class="sec-label">3 · Correos de destino (hasta 5)</div>
+      <div class="emails-grid">
+        <div class="email-row"><div class="email-num">1</div><input type="email" id="email1" placeholder="correo@ejemplo.cl (obligatorio)" oninput="verificarBoton()"></div>
+        <div class="email-row"><div class="email-num">2</div><input type="email" id="email2" placeholder="Opcional" oninput="verificarBoton()"></div>
+        <div class="email-row"><div class="email-num">3</div><input type="email" id="email3" placeholder="Opcional" oninput="verificarBoton()"></div>
+        <div class="email-row"><div class="email-num">4</div><input type="email" id="email4" placeholder="Opcional" oninput="verificarBoton()"></div>
+        <div class="email-row"><div class="email-num">5</div><input type="email" id="email5" placeholder="Opcional" oninput="verificarBoton()"></div>
+      </div>
+      <div class="email-nota">Todos los correos recibirán los archivos PDF y Excel adjuntos.</div>
+    </div>
+
+    <button class="btn-procesar" id="btn" onclick="procesar()" disabled>
+      <span id="btn-icono">🚀</span><span id="btn-texto">Procesar y enviar reportes</span>
+    </button>
+
+    <div class="estado" id="estado">
+      <div class="estado-icono" id="est-icono">ℹ️</div>
+      <div class="estado-txt" style="flex:1">
+        <h3 id="est-titulo"></h3>
+        <p  id="est-msg"></p>
+        <div class="errores-lista" id="errores-lista"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-wrap">
+    Los reportes se descargan automáticamente y se envían por correo.<br>
+    Desarrollado por <strong>José Manuel Mesa Cartes</strong> · Colegio Chuquicamata
+  </div>
+</div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwpo5GQluEbjg9Tv98BaCPajsckw27-zjhMk1MB1Bz_gK-GSMAMjpumnOGgZnX02gLL/exec';
+
+let archivosCSV = [], archivoExcel = null;
+
+function ev(e, tipo, zona) {
+  e.preventDefault();
+  const drop = document.getElementById('drop-'+zona);
+  if (tipo==='over')  { drop.classList.add('over'); return; }
+  if (tipo==='leave') { drop.classList.remove('over'); return; }
+  if (tipo==='drop')  {
+    drop.classList.remove('over');
+    if (zona==='csv')   agregarCSVs(e.dataTransfer.files);
+    if (zona==='excel') setExcel(e.dataTransfer.files[0]);
+  }
+}
+
+function leerB64(file) {
+  return new Promise((res,rej) => {
+    const fr = new FileReader();
+    fr.onload  = () => res(fr.result.split(',')[1]);
+    fr.onerror = rej;
+    fr.readAsDataURL(file);
+  });
+}
+
+async function agregarCSVs(files) {
+  for (const f of files) {
+    if (!f.name.toLowerCase().endsWith('.csv')) continue;
+    if (archivosCSV.find(x => x.nombre===f.name)) continue;
+    const b64 = await leerB64(f);
+    archivosCSV.push({ nombre:f.name, tamaño:f.size, base64:b64 });
+  }
+  renderLista(); verificarBoton();
+}
+
+function renderLista() {
+  const ul = document.getElementById('lista-csv');
+  ul.innerHTML = '';
+  archivosCSV.forEach((f,i) => {
+    const d = document.createElement('div');
+    d.className = 'file-item';
+    d.innerHTML = `<div><span class="fname">${f.nombre}</span><span class="fsize">${(f.tamaño/1024).toFixed(1)} KB</span></div>
+      <button class="del-btn" onclick="quitarCSV(${i})">✕</button>`;
+    ul.appendChild(d);
+  });
+}
+
+function quitarCSV(i) { archivosCSV.splice(i,1); renderLista(); verificarBoton(); }
+
+async function setExcel(file) {
+  if (!file) return;
+  const b64 = await leerB64(file);
+  archivoExcel = { nombre:file.name, tamaño:file.size, base64:b64 };
+  document.getElementById('excel-icono').textContent = '✅';
+  document.getElementById('excel-hint').textContent  = file.name;
+  document.getElementById('excel-sub').textContent   = `${(file.size/1024).toFixed(1)} KB`;
+  verificarBoton();
+}
+
+function getEmails() {
+  return [1,2,3,4,5].map(i=>document.getElementById('email'+i).value.trim()).filter(e=>e.length>0);
+}
+
+function verificarBoton() {
+  const ok = archivosCSV.length>0 && archivoExcel!==null && getEmails().length>0;
+  document.getElementById('btn').disabled = !ok;
+}
+
+function setPaso(n) {
+  [1,2,3,4].forEach(i => {
+    const num = document.getElementById('pn'+i);
+    const txt = document.getElementById('pt'+i);
+    if (i<n)       { num.className='paso-num hecho';  num.textContent='✓'; txt.className='paso-txt'; }
+    else if (i===n){ num.className='paso-num activo'; num.textContent=String(i); txt.className='paso-txt activo'; }
+    else           { num.className='paso-num';        num.textContent=String(i); txt.className='paso-txt'; }
+  });
+  [1,2,3].forEach(i => document.getElementById('pl'+i).className='paso-linea'+(i<n?' hecha':''));
+}
+
+function mostrarEstado(tipo, titulo, msg, errores) {
+  const est = document.getElementById('estado');
+  est.className = 'estado visible '+tipo;
+  document.getElementById('est-icono').textContent  = tipo==='ok'?'✅':tipo==='error'?'❌':'ℹ️';
+  document.getElementById('est-titulo').textContent = titulo;
+  document.getElementById('est-msg').textContent    = msg;
+  const el = document.getElementById('errores-lista');
+  el.innerHTML = '';
+  (errores||[]).forEach(e => {
+    const d = document.createElement('div');
+    d.className = 'error-item';
+    d.innerHTML = `<strong>⚠️ ${e.titulo}</strong>${e.desc}`;
+    el.appendChild(d);
+  });
+}
+
+function interpretarError(msg) {
+  const lista = [];
+  if (msg.includes('not likely a datetime')||msg.includes('strftime')||msg.includes('strptime'))
+    lista.push({ titulo:'Fecha inválida en la tabla de especificaciones', desc:' — La celda de fecha debe contener una fecha completa (ej: 27/10/2025), no solo el número del día.' });
+  if (msg.includes('shape')||msg.includes('column')||msg.includes('num_preguntas'))
+    lista.push({ titulo:'Cantidad de preguntas no coincide', desc:' — El número de preguntas en la tabla de especificaciones debe coincidir exactamente con las columnas del CSV exportado.' });
+  if (msg.includes('iloc')||msg.includes('KeyError')||msg.includes('index'))
+    lista.push({ titulo:'Estructura del Excel incorrecta', desc:' — Verifica que el Excel tenga nivel, asignatura, instrumento, unidad y cursos en las celdas correctas.' });
+  if (msg.includes('read_csv')||msg.includes('EmptyDataError'))
+    lista.push({ titulo:'CSV vacío o inválido', desc:' — Uno de los archivos CSV subidos está vacío o no tiene el formato correcto.' });
+  if (lista.length===0)
+    lista.push({ titulo:'Error en el procesamiento', desc:' — Revisa que los archivos sean los correctos y que la tabla de especificaciones esté bien completada.' });
+  return lista;
+}
+
+function descargarB64(b64, nombre, mime) {
+  const bytes = atob(b64);
+  const arr   = new Uint8Array(bytes.length);
+  for (let i=0; i<bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  const blob = new Blob([arr], {type:mime});
+  const url  = URL.createObjectURL(blob);
+  Object.assign(document.createElement('a'), {href:url, download:nombre}).click();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+async function procesar() {
+  const btn    = document.getElementById('btn');
+  const emails = getEmails();
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin"></div><span>Procesando…</span>';
+
+  setPaso(2);
+  mostrarEstado('info','Enviando archivos…',`Subiendo ${archivosCSV.length} CSV${archivosCSV.length>1?'s':''} + 1 Excel al servidor.`);
+
+  try {
+    const payload = { csvs:archivosCSV.map(f=>f.base64), excel:archivoExcel.base64, emails };
+
+    setPaso(3);
+    mostrarEstado('info','Colab procesando…','El sistema está generando los reportes. Esto puede tardar entre 1 y 3 minutos.');
+
+    const res  = await fetch(APPS_SCRIPT_URL, { method:'POST', body:JSON.stringify(payload) });
+    const data = await res.json();
+
+    if (data.status === 'ok') {
+      setPaso(4);
+      // Descarga automática al PC
+      if (data.pdf_b64 && data.excel_b64) {
+        setTimeout(() => descargarB64(data.pdf_b64,   data.pdf_name,   'application/pdf'), 400);
+        setTimeout(() => descargarB64(data.excel_b64, data.excel_name, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'), 1000);
+      }
+      mostrarEstado('ok','¡Reportes generados y enviados!',
+        `Los archivos se descargaron automáticamente y se enviaron a: ${emails.join(', ')}`);
+      btn.innerHTML = '✅ Proceso completado';
+      btn.style.background = '#16a34a';
+    } else {
+      throw new Error(data.mensaje || 'Error desconocido');
+    }
+  } catch(err) {
+    setPaso(1);
+    mostrarEstado('error','Ocurrió un error','Revisa los siguientes puntos y vuelve a intentarlo:',interpretarError(err.message));
+    btn.disabled = false;
+    btn.innerHTML = '<span>🔄</span><span>Intentar nuevamente</span>';
+    btn.style.background = '';
+  }
+}
+</script>
+</body>
+</html>
