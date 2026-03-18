@@ -13,13 +13,10 @@
   }
   body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--gris); color:var(--texto); min-height:100vh; padding:32px 16px 0; }
   .wrap { max-width:700px; margin:0 auto; }
-
   .header { background:var(--azul); color:white; border-radius:var(--radio) var(--radio) 0 0; padding:26px 32px 22px; text-align:center; }
   .header h1 { font-size:19px; font-weight:700; }
   .header p  { font-size:12px; color:#94b8d8; margin-top:4px; }
-
   .card { background:white; border:1px solid var(--borde); border-top:none; border-radius:0 0 var(--radio) var(--radio); padding:30px 32px; }
-
   .pasos { display:flex; justify-content:center; margin-bottom:26px; }
   .paso  { display:flex; flex-direction:column; align-items:center; gap:5px; flex:1; }
   .paso-num { width:28px; height:28px; border-radius:50%; border:2px solid var(--borde); background:white; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--muted); transition:all .25s; }
@@ -29,24 +26,20 @@
   .paso-txt.activo { color:var(--azul2); font-weight:600; }
   .paso-linea { flex:1; height:2px; background:var(--borde); align-self:center; margin-bottom:18px; transition:background .25s; }
   .paso-linea.hecha { background:var(--verde); }
-
   .seccion { margin-bottom:22px; }
   .sec-label { font-size:11px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:7px; }
   .sec-label::after { content:''; flex:1; height:1px; background:var(--borde); }
-
   .drop-zone { border:2px dashed var(--borde); border-radius:var(--radio); padding:18px 16px; text-align:center; cursor:pointer; transition:all .18s; background:#fafbfc; }
   .drop-zone:hover, .drop-zone.over { border-color:var(--azul2); background:#eff6ff; }
   .drop-zone .icono { font-size:24px; margin-bottom:5px; }
   .drop-zone .hint  { font-size:13px; color:var(--muted); }
   .drop-zone .sub   { font-size:11px; color:#9ca3af; margin-top:3px; }
   input[type=file]  { display:none; }
-
   #lista-csv { margin-top:8px; display:flex; flex-direction:column; gap:6px; }
   .file-item { display:flex; align-items:center; justify-content:space-between; padding:7px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; font-size:13px; }
   .file-item .fname { font-weight:600; color:#15803d; }
   .file-item .fsize { font-size:11px; color:#6b7280; margin-left:6px; }
   .file-item .del-btn { background:none; border:none; cursor:pointer; color:#ef4444; font-size:16px; padding:0 4px; }
-
   .emails-grid { display:flex; flex-direction:column; gap:7px; }
   .email-row { display:flex; align-items:center; gap:8px; }
   .email-row input { flex:1; padding:9px 12px; border:1px solid var(--borde); border-radius:8px; font-size:13px; color:var(--texto); outline:none; transition:border .18s; }
@@ -54,13 +47,10 @@
   .email-row input::placeholder { color:#9ca3af; }
   .email-num { width:22px; height:22px; border-radius:50%; background:var(--gris); border:1px solid var(--borde); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--muted); flex-shrink:0; }
   .email-nota { font-size:11px; color:var(--muted); margin-top:6px; }
-
   .btn-procesar { width:100%; padding:13px; background:var(--azul2); color:white; border:none; border-radius:var(--radio); font-size:15px; font-weight:700; cursor:pointer; transition:background .18s, transform .1s; display:flex; align-items:center; justify-content:center; gap:8px; }
   .btn-procesar:hover   { background:#1d4ed8; }
   .btn-procesar:active  { transform:scale(.98); }
   .btn-procesar:disabled{ background:#94a3b8; cursor:not-allowed; }
-
-  /* Resultado */
   .resultado { display:none; margin-top:18px; border-radius:var(--radio); overflow:hidden; border:1px solid #bbf7d0; }
   .resultado.visible { display:block; }
   .res-header { background:var(--verde); color:white; padding:16px 20px; }
@@ -69,18 +59,12 @@
   .res-body { background:#f0fdf4; padding:18px 20px; }
   .res-info { font-size:13px; color:#166534; margin-bottom:14px; line-height:1.7; }
   .dl-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .dl-btn {
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    padding:13px 14px; border-radius:8px;
-    font-size:14px; font-weight:700; text-decoration:none; cursor:pointer;
-    transition:all .18s; border:none;
-  }
-  .dl-btn-pdf   { background:var(--azul);  color:white; }
-  .dl-btn-excel { background:var(--azul2); color:white; }
+  .dl-btn { display:flex; align-items:center; justify-content:center; gap:8px; padding:13px 14px; border-radius:8px; font-size:14px; font-weight:700; text-decoration:none; cursor:pointer; transition:all .18s; border:none; color:white; }
+  .dl-btn-pdf   { background:var(--azul); }
+  .dl-btn-excel { background:var(--azul2); }
   .dl-btn:hover { opacity:.88; transform:translateY(-1px); }
+  .dl-btn.disabled { background:#94a3b8; cursor:not-allowed; pointer-events:none; }
   .dl-nota { font-size:11px; color:#6b7280; margin-top:10px; text-align:center; }
-
-  /* Estado info/error */
   .estado { margin-top:18px; padding:15px 18px; border-radius:var(--radio); display:none; align-items:flex-start; gap:12px; }
   .estado.visible { display:flex; }
   .estado.info  { background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; }
@@ -88,17 +72,13 @@
   .estado-icono { font-size:20px; flex-shrink:0; margin-top:1px; }
   .estado-txt h3 { font-size:14px; font-weight:700; margin-bottom:5px; }
   .estado-txt p  { font-size:13px; line-height:1.55; }
-
   .errores-lista { margin-top:10px; display:flex; flex-direction:column; gap:6px; }
   .error-item { padding:8px 11px; background:#fff1f2; border:1px solid #fecdd3; border-radius:7px; font-size:12px; color:#9f1239; }
   .error-item strong { display:block; margin-bottom:2px; font-size:13px; }
-
   .spin { width:18px; height:18px; flex-shrink:0; border:2.5px solid rgba(255,255,255,.4); border-top-color:white; border-radius:50%; animation:girar .8s linear infinite; }
   @keyframes girar { to { transform:rotate(360deg); } }
-
   .footer-wrap { text-align:center; padding:16px 0 24px; font-size:11px; color:#9ca3af; line-height:1.8; }
   .footer-wrap strong { color:#64748b; }
-
   @media(max-width:480px) { .dl-grid { grid-template-columns:1fr; } }
 </style>
 </head>
@@ -108,7 +88,6 @@
     <h1>📊 Sistema de Reportes de Evaluación</h1>
     <p>Colegio Chuquicamata · Genera reportes PDF y Excel automáticamente</p>
   </div>
-
   <div class="card">
     <div class="pasos">
       <div class="paso"><div class="paso-num activo" id="pn1">1</div><div class="paso-txt activo" id="pt1">Archivos</div></div>
@@ -119,7 +98,6 @@
       <div class="paso-linea" id="pl3"></div>
       <div class="paso"><div class="paso-num" id="pn4">4</div><div class="paso-txt" id="pt4">Listo</div></div>
     </div>
-
     <div class="seccion">
       <div class="sec-label">1 · Respuestas de estudiantes (CSV)</div>
       <div class="drop-zone" id="drop-csv" onclick="document.getElementById('fi-csv').click()"
@@ -131,7 +109,6 @@
       </div>
       <div id="lista-csv"></div>
     </div>
-
     <div class="seccion">
       <div class="sec-label">2 · Tabla de especificaciones (XLSX)</div>
       <div class="drop-zone" id="drop-excel" onclick="document.getElementById('fi-excel').click()"
@@ -142,7 +119,6 @@
         <div class="sub"  id="excel-sub">.xlsx con la tabla de especificaciones del instrumento</div>
       </div>
     </div>
-
     <div class="seccion">
       <div class="sec-label">3 · Correos de destino (hasta 5)</div>
       <div class="emails-grid">
@@ -152,30 +128,25 @@
         <div class="email-row"><div class="email-num">4</div><input type="email" id="email4" placeholder="Opcional" oninput="verificarBoton()"></div>
         <div class="email-row"><div class="email-num">5</div><input type="email" id="email5" placeholder="Opcional" oninput="verificarBoton()"></div>
       </div>
-      <div class="email-nota">Todos los correos recibirán un link de descarga. El primero es obligatorio.</div>
+      <div class="email-nota">Todos los correos recibirán un link de descarga directa.</div>
     </div>
-
     <button class="btn-procesar" id="btn" onclick="procesar()" disabled>
-      <span id="btn-icono">🚀</span><span id="btn-texto">Procesar y enviar reportes</span>
+      <span>🚀</span><span id="btn-texto">Procesar y enviar reportes</span>
     </button>
-
-    <!-- Resultado -->
     <div class="resultado" id="resultado">
       <div class="res-header">
         <h3>✅ ¡Reportes generados correctamente!</h3>
-        <p id="res-subtitulo"></p>
+        <p id="res-sub">Archivos listos · Correos enviados</p>
       </div>
       <div class="res-body">
         <div class="res-info" id="res-info"></div>
         <div class="dl-grid">
-          <button class="dl-btn dl-btn-pdf"   id="dl-pdf"   onclick="descargarPDF()">📄 Descargar PDF</button>
-          <button class="dl-btn dl-btn-excel" id="dl-excel" onclick="descargarExcel()">📊 Descargar Excel</button>
+          <a class="dl-btn dl-btn-pdf"   id="dl-pdf"   href="#" target="_blank">📄 Descargar PDF</a>
+          <a class="dl-btn dl-btn-excel" id="dl-excel" href="#" target="_blank">📊 Descargar Excel</a>
         </div>
-        <div class="dl-nota">Los archivos también fueron enviados por correo con links de descarga directa.</div>
+        <div class="dl-nota" id="dl-nota">Haz clic para descargar. Los mismos links fueron enviados por correo.</div>
       </div>
     </div>
-
-    <!-- Estado -->
     <div class="estado" id="estado">
       <div class="estado-icono" id="est-icono">ℹ️</div>
       <div class="estado-txt" style="flex:1">
@@ -185,18 +156,16 @@
       </div>
     </div>
   </div>
-
   <div class="footer-wrap">
-    Los reportes se descargan directamente y se envían a los correos indicados.<br>
+    Los reportes se envían por correo con links de descarga directa.<br>
     Desarrollado por <strong>José Manuel Mesa Cartes</strong> · Colegio Chuquicamata
   </div>
 </div>
-
 <script>
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwpo5GQluEbjg9Tv98BaCPajsckw27-zjhMk1MB1Bz_gK-GSMAMjpumnOGgZnX02gLL/exec';
+// ── REEMPLAZA ESTA URL CON LA NUEVA QUE GENERA APPS SCRIPT ──
+const APPS_SCRIPT_URL = 'REEMPLAZAR_CON_NUEVA_URL';
 
 let archivosCSV = [], archivoExcel = null;
-let _pdfB64 = '', _excelB64 = '', _pdfName = '', _excelName = '';
 
 function ev(e, tipo, zona) {
   e.preventDefault();
@@ -209,7 +178,6 @@ function ev(e, tipo, zona) {
     if (zona==='excel') setExcel(e.dataTransfer.files[0]);
   }
 }
-
 function leerB64(file) {
   return new Promise((res,rej) => {
     const fr = new FileReader();
@@ -218,7 +186,6 @@ function leerB64(file) {
     fr.readAsDataURL(file);
   });
 }
-
 async function agregarCSVs(files) {
   for (const f of files) {
     if (!f.name.toLowerCase().endsWith('.csv')) continue;
@@ -228,7 +195,6 @@ async function agregarCSVs(files) {
   }
   renderLista(); verificarBoton();
 }
-
 function renderLista() {
   const ul = document.getElementById('lista-csv');
   ul.innerHTML = '';
@@ -240,9 +206,7 @@ function renderLista() {
     ul.appendChild(d);
   });
 }
-
 function quitarCSV(i) { archivosCSV.splice(i,1); renderLista(); verificarBoton(); }
-
 async function setExcel(file) {
   if (!file) return;
   const b64 = await leerB64(file);
@@ -252,15 +216,12 @@ async function setExcel(file) {
   document.getElementById('excel-sub').textContent   = `${(file.size/1024).toFixed(1)} KB`;
   verificarBoton();
 }
-
 function getEmails() {
   return [1,2,3,4,5].map(i=>document.getElementById('email'+i).value.trim()).filter(e=>e.length>0);
 }
-
 function verificarBoton() {
   document.getElementById('btn').disabled = !(archivosCSV.length>0 && archivoExcel && getEmails().length>0);
 }
-
 function setPaso(n) {
   [1,2,3,4].forEach(i => {
     const num = document.getElementById('pn'+i);
@@ -271,7 +232,6 @@ function setPaso(n) {
   });
   [1,2,3].forEach(i => document.getElementById('pl'+i).className='paso-linea'+(i<n?' hecha':''));
 }
-
 function mostrarEstado(tipo, titulo, msg) {
   document.getElementById('resultado').className = 'resultado';
   const est = document.getElementById('estado');
@@ -281,7 +241,6 @@ function mostrarEstado(tipo, titulo, msg) {
   document.getElementById('est-msg').textContent    = msg;
   document.getElementById('errores-lista').innerHTML = '';
 }
-
 function mostrarError(msg) {
   document.getElementById('resultado').className = 'resultado';
   const lista = interpretarError(msg);
@@ -299,7 +258,6 @@ function mostrarError(msg) {
     el.appendChild(d);
   });
 }
-
 function interpretarError(msg) {
   const lista = [];
   if (msg.includes('not likely a datetime')||msg.includes('strftime'))
@@ -312,27 +270,6 @@ function interpretarError(msg) {
     lista.push({ titulo:'Error en el procesamiento', desc:' — Revisa que los archivos sean correctos.' });
   return lista;
 }
-
-// Descarga directa desde base64 almacenado en memoria
-function descargarB64(b64, nombre, mime) {
-  try {
-    const bytes = atob(b64);
-    const arr   = new Uint8Array(bytes.length);
-    for (let i=0; i<bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-    const blob = new Blob([arr], {type:mime});
-    const url  = URL.createObjectURL(blob);
-    const a    = Object.assign(document.createElement('a'), {href:url, download:nombre});
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 2000);
-  } catch(err) {
-    alert('Error al descargar. Usa el link del correo.');
-  }
-}
-
-function descargarPDF()   { descargarB64(_pdfB64,   _pdfName,   'application/pdf'); }
-function descargarExcel() { descargarB64(_excelB64, _excelName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); }
-
 async function procesar() {
   const btn    = document.getElementById('btn');
   const emails = getEmails();
@@ -354,26 +291,41 @@ async function procesar() {
     const data = await res.json();
 
     if (data.status === 'ok') {
-      // Guardar base64 en memoria para los botones de descarga
-      _pdfB64    = data.pdf_b64    || '';
-      _excelB64  = data.excel_b64  || '';
-      _pdfName   = data.pdf_name   || 'reporte.pdf';
-      _excelName = data.excel_name || 'reporte.xlsx';
-
       setPaso(4);
       document.getElementById('estado').className = 'estado';
       document.getElementById('resultado').className = 'resultado visible';
-      document.getElementById('res-subtitulo').textContent = 'Archivos listos para descargar · Correos enviados';
+
+      // Mostrar info
       document.getElementById('res-info').innerHTML =
         '<strong>Correos enviados a:</strong> ' + (data.enviados||emails).join(', ') + '<br>' +
         (data.drive_ok ? '<strong>Guardado en Drive:</strong> ✅' : '');
 
+      // Configurar botones de descarga
+      const dlPdf   = document.getElementById('dl-pdf');
+      const dlExcel = document.getElementById('dl-excel');
+
+      if (data.pdf_link) {
+        dlPdf.href = data.pdf_link;
+        dlPdf.className = 'dl-btn dl-btn-pdf';
+      } else {
+        dlPdf.className = 'dl-btn dl-btn-pdf disabled';
+        dlPdf.textContent = '📄 PDF (ver correo)';
+      }
+
+      if (data.excel_link) {
+        dlExcel.href = data.excel_link;
+        dlExcel.className = 'dl-btn dl-btn-excel';
+      } else {
+        dlExcel.className = 'dl-btn dl-btn-excel disabled';
+        dlExcel.textContent = '📊 Excel (ver correo)';
+      }
+
+      if (!data.drive_ok) {
+        document.getElementById('dl-nota').textContent = 'Los archivos fueron enviados por correo como adjuntos.';
+      }
+
       btn.innerHTML = '✅ Proceso completado';
       btn.style.background = '#16a34a';
-
-      // Descarga automática
-      if (_pdfB64)   setTimeout(()=>descargarPDF(),   500);
-      if (_excelB64) setTimeout(()=>descargarExcel(), 1500);
 
     } else {
       throw new Error(data.mensaje || 'Error desconocido');
